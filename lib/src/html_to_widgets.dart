@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:html/dom.dart' as dom;
@@ -9,6 +10,7 @@ import 'package:htmltopdfwidgets/src/attributes.dart';
 import 'package:htmltopdfwidgets/src/extension/int_extensions.dart';
 import 'package:htmltopdfwidgets/src/utils/app_assets.dart';
 import 'package:http/http.dart';
+import 'package:image/image.dart' as img;
 
 import '../htmltopdfwidgets.dart';
 import 'extension/color_extension.dart';
@@ -654,14 +656,18 @@ class WidgetsHTMLDecoder {
           }
           return Text("");
         }
-
-        final netImage = await _saveImage(src);
-        return Image(MemoryImage(netImage),
+        if (src.startsWith("http/")) {
+          final netImage = await _saveImage(src);
+          return Image(MemoryImage(netImage),
+              alignment: customStyles.imageAlignment);
+        }
+        var localImage = await _getFileBytes(src);
+        return Image(MemoryImage(localImage),
             alignment: customStyles.imageAlignment);
       }
-      return Text("");
+      return Text("$src");
     } catch (e) {
-      return Text("");
+      return Text("$src");
     }
   }
 
@@ -677,6 +683,22 @@ class WidgetsHTMLDecoder {
     } catch (e) {
       throw Exception(e);
     }
+  }
+
+  Future<Uint8List> _getFileBytes(String filePath) async {
+    File imageFile = File(filePath);
+    final Uint8List byteList = await imageFile.readAsBytes();
+    final image = img.decodeImage(byteList);
+    if (image == null) return byteList;
+    int imgWidth = image.width;
+    print("image width: $imgWidth, height: ${image.height}");
+    if (imgWidth > 400) {
+      imgWidth = 400;
+    }
+    final resized = img.copyResize(image, width: imgWidth, maintainAspect: true);
+    print("resized width: ${resized.width}, height: ${resized.height}");
+    return Uint8List.fromList(img.encodeJpg(resized));
+    // return byteList;
   }
 
   /// Function to parse a complex HTML element and return a widget
