@@ -690,12 +690,12 @@ class WidgetsHTMLDecoder {
     final Uint8List byteList = await imageFile.readAsBytes();
     final image = img.decodeImage(byteList);
     if (image == null) return byteList;
-    int imgWidth = image.width;
-    print("image width: $imgWidth, height: ${image.height}");
-    if (imgWidth > 400) {
-      imgWidth = 400;
+    int height = image.height;
+    print("height width: $height, width: ${image.width}");
+    if (height > 800) {
+      height = 800;
     }
-    final resized = img.copyResize(image, width: imgWidth, maintainAspect: true);
+    final resized = img.copyResize(image, height: height, maintainAspect: true);
     print("resized width: ${resized.width}, height: ${resized.height}");
     return Uint8List.fromList(img.encodeJpg(resized));
     // return byteList;
