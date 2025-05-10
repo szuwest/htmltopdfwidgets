@@ -692,8 +692,8 @@ class WidgetsHTMLDecoder {
     if (image == null) return byteList;
     int height = image.height;
     print("height width: $height, width: ${image.width}");
-    if (height > 750) {
-      height = 750;
+    if (height > 600) {
+      height = 600;
     }
     final resized = img.copyResize(image, height: height, maintainAspect: true);
     print("resized width: ${resized.width}, height: ${resized.height}");
