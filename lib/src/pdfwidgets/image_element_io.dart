@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:html/dom.dart' as dom;
 import 'package:http/http.dart';
+import 'package:image/image.dart' as img;
 
 import '../../htmltopdfwidgets.dart';
 
@@ -22,7 +23,7 @@ Future<Widget> parseImageElement(dom.Element element,
           return Image(MemoryImage(listData),
               alignment: customStyles.imageAlignment);
         }
-        return Text("");
+        return Text("$src");
       }
       if (src.startsWith("http") || src.startsWith("https")) {
         final netImage = await _saveImage(src);
@@ -32,13 +33,30 @@ Future<Widget> parseImageElement(dom.Element element,
 
       final localImage = File(src);
       if (await localImage.exists()) {
-        return Image(MemoryImage(await localImage.readAsBytes()));
+        var localImageBytes = await _getFileBytes(localImage);
+        return Image(MemoryImage(localImageBytes));
       }
     }
-    return Text("");
+    return Text("$src");
   } catch (e) {
-    return Text("");
+    return Text("$src");
   }
+}
+
+const imageMaxHeight = 450;
+Future<Uint8List> _getFileBytes(File imageFile) async {
+  final Uint8List byteList = await imageFile.readAsBytes();
+  final image = img.decodeImage(byteList);
+  if (image == null) return byteList;
+  int height = image.height;
+  print("height width: $height, width: ${image.width}");
+  if (height > imageMaxHeight) {
+    height = imageMaxHeight;
+  }
+  final resized = img.copyResize(image, height: height, maintainAspect: true);
+  print("resized width: ${resized.width}, height: ${resized.height}");
+  return Uint8List.fromList(img.encodeJpg(resized));
+  // return byteList;
 }
 
 /// Function to download and save an image from a URL
