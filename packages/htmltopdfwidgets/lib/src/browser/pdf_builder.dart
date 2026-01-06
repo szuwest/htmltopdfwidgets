@@ -4,7 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import '../htmltagstyles.dart';
 import 'css_style.dart';
 import 'image_builder_io.dart' if (dart.library.html) 'image_builder_web.dart'
-    as image_builder;
+as image_builder;
 import 'render_node.dart';
 
 /// [PdfBuilder] converts a tree of [RenderNode]s into a list of [pw.Widget]s.
@@ -131,10 +131,10 @@ class PdfBuilder {
         if (widgets.isNotEmpty && i < node.children.length - 1) {
           final nextNonEmpty = node.children.skip(i + 1).firstWhere(
                 (n) =>
-                    n.display != Display.none && n.tagName != '#text' ||
-                    (n.text?.trim().isNotEmpty ?? false),
-                orElse: () => RenderNode(tagName: '', style: const CSSStyle()),
-              );
+            n.display != Display.none && n.tagName != '#text' ||
+                (n.text?.trim().isNotEmpty ?? false),
+            orElse: () => RenderNode(tagName: '', style: const CSSStyle()),
+          );
           if (nextNonEmpty.tagName.isNotEmpty) {
             // Add small spacing between block elements
             widgets.add(pw.SizedBox(height: 4));
@@ -203,6 +203,7 @@ class PdfBuilder {
       child: pw.RichText(
         text: pw.TextSpan(children: spans),
         textAlign: node.style.textAlign ?? pw.TextAlign.left,
+        overflow: pw.TextOverflow.span, // Enable text spanning across pages
       ),
     );
   }
@@ -223,7 +224,7 @@ class PdfBuilder {
         if (child.tagName == 'tr') {
           rows.add(await _buildTableRow(child,
               isHeaderRow:
-                  isFirstRow && child.children.any((c) => c.tagName == 'th')));
+              isFirstRow && child.children.any((c) => c.tagName == 'th')));
           isFirstRow = false;
         } else {
           // Handle thead/tbody/tfoot children
@@ -250,9 +251,9 @@ class PdfBuilder {
         border: borderCollapse
             ? pw.TableBorder.all(color: borderColor, width: borderWidth)
             : pw.TableBorder.symmetric(
-                inside: pw.BorderSide(color: borderColor, width: borderWidth),
-                outside: pw.BorderSide(color: borderColor, width: borderWidth),
-              ),
+          inside: pw.BorderSide(color: borderColor, width: borderWidth),
+          outside: pw.BorderSide(color: borderColor, width: borderWidth),
+        ),
         defaultColumnWidth: const pw.IntrinsicColumnWidth(),
         columnWidths: node.style.width != null ? null : null,
         children: rows,
@@ -319,11 +320,13 @@ class PdfBuilder {
           style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
         ),
         textAlign: pw.TextAlign.center,
+        overflow: pw.TextOverflow.span, // Enable text spanning
       );
     }
 
     return pw.RichText(
       text: pw.TextSpan(children: spans),
+      overflow: pw.TextOverflow.span, // Enable text spanning
     );
   }
 
@@ -366,6 +369,7 @@ class PdfBuilder {
       contentWidget = pw.RichText(
         text: pw.TextSpan(children: spans),
         textAlign: node.style.textAlign ?? pw.TextAlign.left,
+        overflow: pw.TextOverflow.span, // Enable text spanning across pages
       );
     } else {
       // Block content
@@ -385,9 +389,9 @@ class PdfBuilder {
           tableRows.add(pw.TableRow(children: [
             i == 0
                 ? pw.Container(
-                    alignment: pw.Alignment.topRight,
-                    padding: const pw.EdgeInsets.only(right: 5),
-                    child: bullet)
+                alignment: pw.Alignment.topRight,
+                padding: const pw.EdgeInsets.only(right: 5),
+                child: bullet)
                 : pw.SizedBox(),
             children[i]
           ]));
@@ -447,15 +451,15 @@ class PdfBuilder {
       ),
       child: checked
           ? pw.Center(
-              child: pw.Text(
-                'X',
-                style: pw.TextStyle(
-                  fontSize: size * 0.7,
-                  color: PdfColors.white,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            )
+        child: pw.Text(
+          'X',
+          style: pw.TextStyle(
+            fontSize: size * 0.7,
+            color: PdfColors.white,
+            fontWeight: pw.FontWeight.bold,
+          ),
+        ),
+      )
           : null,
     );
   }
@@ -668,13 +672,14 @@ class PdfBuilder {
       _collectInlineSpans(node, spans);
     }
 
-    // Wrap in a Container with margin for proper spacing
-    return pw.Container(
-      margin: const pw.EdgeInsets.only(bottom: 6),
+    // Use Padding instead of Container to allow text spanning across pages
+    return pw.Padding(
+      padding: const pw.EdgeInsets.only(bottom: 6),
       child: pw.RichText(
         text: pw.TextSpan(children: spans),
         textAlign: parentStyle.textAlign ?? pw.TextAlign.left,
         textDirection: parentStyle.textDirection,
+        overflow: pw.TextOverflow.span, // Enable text spanning across pages
       ),
     );
   }
@@ -805,7 +810,7 @@ class PdfBuilder {
       font: style.fontFamily != null ? null : null,
       fontFallback: fontFallback,
       lineSpacing:
-          style.lineHeight, // Add line-height support if available in CSSStyle
+      style.lineHeight, // Add line-height support if available in CSSStyle
     );
   }
 }
