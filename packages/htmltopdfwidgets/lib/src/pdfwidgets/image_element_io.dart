@@ -20,20 +20,23 @@ Future<Widget> parseImageElement(dom.Element element,
         if (components.length > 1) {
           var base64Encoded = components.last;
           Uint8List listData = base64Decode(base64Encoded);
-          return Image(MemoryImage(listData),
+          final localImageBytes = await _resizeImage(listData);
+          return Image(MemoryImage(localImageBytes),
               alignment: customStyles.imageAlignment);
         }
         return Text("$src");
       }
       if (src.startsWith("http") || src.startsWith("https")) {
         final netImage = await _saveImage(src);
-        return Image(MemoryImage(netImage),
+        final localImageBytes = await _resizeImage(netImage);
+        return Image(MemoryImage(localImageBytes),
             alignment: customStyles.imageAlignment);
       }
 
       final localImage = File(src);
       if (await localImage.exists()) {
-        var localImageBytes = await _getFileBytes(localImage);
+        final Uint8List byteList = await localImage.readAsBytes();
+        final localImageBytes = await _resizeImage(byteList);
         return Image(MemoryImage(localImageBytes));
       }
     }
@@ -44,8 +47,7 @@ Future<Widget> parseImageElement(dom.Element element,
 }
 
 const imageMaxHeight = 450;
-Future<Uint8List> _getFileBytes(File imageFile) async {
-  final Uint8List byteList = await imageFile.readAsBytes();
+Future<Uint8List> _resizeImage(Uint8List byteList) async {
   final image = img.decodeImage(byteList);
   if (image == null) return byteList;
   int height = image.height;
