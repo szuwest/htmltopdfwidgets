@@ -21,6 +21,7 @@ import '../pdfwidgets/quote_widget.dart';
 ////html deocoder that deocde html and convert it into pdf widgets
 class WidgetsHTMLDecoder {
   final double defaultFontSize;
+  final double defaultFontHeight;
   final String defaultFontFamily;
 
   /// Resolve the font for the PDF based on (font family, bold, italic)
@@ -41,6 +42,7 @@ class WidgetsHTMLDecoder {
     this.defaultFontFamily = "Roboto",
     this.wrapInParagraph = false,
     this.defaultFontSize = 12.0,
+    this.defaultFontHeight = 1.2,
   });
 
   //// The class takes an HTML string as input and returns a list of Widgets. The Widgets
@@ -65,6 +67,7 @@ class WidgetsHTMLDecoder {
         await fontResolver?.call(defaultFontFamily, true, true);
     final baseTextStyle = TextStyle(
         fontSize: defaultFontSize,
+        height: defaultFontHeight,
         font: font,
         fontNormal: font,
         fontBold: fontBold,
